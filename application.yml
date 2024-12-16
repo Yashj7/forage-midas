@@ -1,0 +1,6 @@
+general:
+  kafka-topic: topic
+
+spring:
+  application:
+    name: midas-core
