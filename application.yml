@@ -1,6 +1,26 @@
 general:
   kafka-topic: topic
 
+# Server Configuration
+server:
+  port: 8080 # Default port for the application
+
 spring:
   application:
     name: midas-core
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      auto-offset-reset: latest
+      enable-auto-commit: true
+      group-id: my-group
+
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework: DEBUG
+#    org.springframework.kafka: DEBUG
+#    org.apache.kafka.clients: DEBUG
