@@ -2,8 +2,8 @@ general:
   kafka-topic: topic
 
 # Server Configuration
-server:
-  port: 8080 # Default port for the application
+#server:
+#  port: 8080 # Default port for the application
 
 spring:
   application:
@@ -14,13 +14,28 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
+      bootstrap-servers: localhost:9092
       auto-offset-reset: latest
       enable-auto-commit: true
       group-id: my-group
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+#    show-sql: true
+#    properties.hibernate.format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2.console.enabled: true
 
 #logging:
 #  level:
-#    root: INFO
-#    org.springframework: DEBUG
-#    org.springframework.kafka: DEBUG
-#    org.apache.kafka.clients: DEBUG
+#    root: DEBUG
+#    org:
+#      springframework: DEBUG
+#      springframework.kafka: DEBUG
+#      apache.kafka.clients: DEBUG
+#      hibernate:
+#        SQL: DEBUG
+#        descriptor.sql: trace
