@@ -2,6 +2,8 @@ package com.jpmc.midascore;
 
 import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.entity.User;
+import com.jpmc.midascore.foundation.Incentive;
+import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRecordRepository;
 import com.jpmc.midascore.repository.UserRepository;
 import org.slf4j.Logger;
@@ -9,18 +11,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-
 @Service
 public class TransactionService {
     private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
     private final UserRepository userRepository;
     private final TransactionRecordRepository transactionRecordRepository;
+    private final IncentiveService incentiveService;
 
-    public TransactionService(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository) {
+    public TransactionService(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository, IncentiveService incentiveService) {
         this.userRepository = userRepository;
         this.transactionRecordRepository = transactionRecordRepository;
+        this.incentiveService = incentiveService;
     }
 
     @Transactional
@@ -55,6 +57,13 @@ public class TransactionService {
         sender.setBalance(sender.getBalance()-amount);
         recipient.setBalance(recipient.getBalance()+amount);
 
+        Transaction transaction = new Transaction(sender.getId(), recipient.getId(), amount);
+        Incentive incentive = incentiveService.getIncentive(transaction);
+
+        float incentiveAmount = incentive.getAmount();
+        logger.info("Incentive amount: {}", incentiveAmount);
+        recipient.setBalance(recipient.getBalance() + amount + incentiveAmount);
+
         TransactionRecord transactionRecord = new TransactionRecord();
         transactionRecord.setSender(sender);
         transactionRecord.setRecipient(recipient);
@@ -64,7 +73,7 @@ public class TransactionService {
         userRepository.save(sender);
         userRepository.save(recipient);
 
-        logger.info("Transaction processed successfully: senderId={}, recipientId={}, amount={}",
-                sender.getId(), recipient.getId(), amount);
+        logger.info("Transaction processed successfully: senderId={}, recipientId={}, amount={}, incentive={}",
+                sender.getId(), recipient.getId(), amount, incentiveAmount);
     }
 }

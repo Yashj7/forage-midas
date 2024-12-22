@@ -1,5 +1,6 @@
 package com.jpmc.midascore;
 
+import com.jpmc.midascore.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,12 @@ public class TaskFourTests {
     @Autowired
     private FileLoader fileLoader;
 
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     void task_four_verifier() throws InterruptedException {
         userPopulator.populate();
@@ -32,15 +39,32 @@ public class TaskFourTests {
         }
         Thread.sleep(2000);
 
+        for (String transactionLine : transactionLines) {
+            try {
+                String[] parts = transactionLine.split(",");
+                if (parts.length != 3) {
+                    logger.warn("Invalid transaction format: {}", transactionLine);
+                    continue;
+                }
+
+                Long senderId = Long.parseLong(parts[0].trim());
+                Long recipientId = Long.parseLong(parts[1].trim());
+                float amount = Float.parseFloat(parts[2].trim());
+
+                transactionService.processTransaction(senderId, recipientId, amount);
+            } catch (Exception e) {
+                logger.error("Error processing transaction line: {}, reason: {}", transactionLine, e.getMessage(), e);
+            }
+        }
 
         logger.info("----------------------------------------------------------");
         logger.info("----------------------------------------------------------");
         logger.info("----------------------------------------------------------");
         logger.info("use your debugger to find out what wilbur's balance is after all transactions are processed");
         logger.info("kill this test once you find the answer");
-        while (true) {
-            Thread.sleep(20000);
-            logger.info("...");
-        }
+         while (true) {
+             Thread.sleep(20000);
+             logger.info("...");
+         }
     }
 }
