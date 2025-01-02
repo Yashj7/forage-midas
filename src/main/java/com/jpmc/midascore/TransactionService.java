@@ -2,8 +2,6 @@ package com.jpmc.midascore;
 
 import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.entity.User;
-import com.jpmc.midascore.foundation.Incentive;
-import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRecordRepository;
 import com.jpmc.midascore.repository.UserRepository;
 import org.slf4j.Logger;
@@ -17,12 +15,10 @@ public class TransactionService {
 
     private final UserRepository userRepository;
     private final TransactionRecordRepository transactionRecordRepository;
-    private final IncentiveService incentiveService;
 
-    public TransactionService(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository, IncentiveService incentiveService) {
+    public TransactionService(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository) {
         this.userRepository = userRepository;
         this.transactionRecordRepository = transactionRecordRepository;
-        this.incentiveService = incentiveService;
     }
 
     @Transactional
@@ -46,23 +42,18 @@ public class TransactionService {
             logger.warn("Sender or recipient not found.");
             return false;
         }
-        if (sender.getBalance() < 0) {
-            logger.warn("Insufficient balance for senderId={}", sender.getId());
+        if (sender.getBalance() < amount) {
+            // logger.warn("Insufficient balance for senderId={}", sender.getId());
+            logger.info("Sender balance:{}, amount:{}",sender.getBalance(),amount);
             return false;
         }
+        logger.info("Sender balance:{}, amount:{}",sender.getBalance(),amount);
         return true;
     }
 
     private void processValidTransaction(User sender, User recipient, float amount) {
         sender.setBalance(sender.getBalance()-amount);
         recipient.setBalance(recipient.getBalance()+amount);
-
-        Transaction transaction = new Transaction(sender.getId(), recipient.getId(), amount);
-        Incentive incentive = incentiveService.getIncentive(transaction);
-
-        float incentiveAmount = incentive.getAmount();
-        logger.info("Incentive amount: {}", incentiveAmount);
-        recipient.setBalance(recipient.getBalance() + amount + incentiveAmount);
 
         TransactionRecord transactionRecord = new TransactionRecord();
         transactionRecord.setSender(sender);
@@ -73,7 +64,6 @@ public class TransactionService {
         userRepository.save(sender);
         userRepository.save(recipient);
 
-        logger.info("Transaction processed successfully: senderId={}, recipientId={}, amount={}, incentive={}",
-                sender.getId(), recipient.getId(), amount, incentiveAmount);
+        logger.info("Sender balance:{}, Receiver balance:{}",sender.getBalance(),recipient.getBalance());
     }
 }

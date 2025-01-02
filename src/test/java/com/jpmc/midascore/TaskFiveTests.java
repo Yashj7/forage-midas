@@ -25,6 +25,9 @@ public class TaskFiveTests {
     private FileLoader fileLoader;
 
     @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
     private BalanceQuerier balanceQuerier;
 
 
@@ -34,6 +37,21 @@ public class TaskFiveTests {
         String[] transactionLines = fileLoader.loadStrings("/test_data/rueiwoqp.tyruei");
         for (String transactionLine : transactionLines) {
             kafkaProducer.send(transactionLine);
+            try {
+                String[] parts = transactionLine.split(",");
+                if (parts.length != 3) {
+                    logger.warn("Invalid transaction format: {}", transactionLine);
+                    continue;
+                }
+
+                Long senderId = Long.parseLong(parts[0].trim());
+                Long recipientId = Long.parseLong(parts[1].trim());
+                float amount = Float.parseFloat(parts[2].trim());
+
+                transactionService.processTransaction(senderId, recipientId, amount);
+            } catch (Exception e) {
+                logger.error("Error processing transaction line: {}, reason: {}", transactionLine, e.getMessage(), e);
+            }
         }
         Thread.sleep(2000);
 

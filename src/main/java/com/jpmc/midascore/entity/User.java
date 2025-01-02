@@ -1,8 +1,6 @@
 package com.jpmc.midascore.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -17,14 +15,6 @@ public class User {
 
     @Column(nullable = false)
     private float balance;
-
-//    @OneToMany(mappedBy = "sender")
-//    @JsonIgnore
-//    private List<TransactionRecord> sentTransactions;
-//
-//    @OneToMany(mappedBy = "recipient")
-//    @JsonIgnore
-//    private List<TransactionRecord> receivedTransactions;
 
     protected User() {
     }
@@ -62,20 +52,4 @@ public class User {
     public void setBalance(float balance) {
         this.balance = balance;
     }
-
-//    public List<TransactionRecord> getSentTransactions() {
-//        return sentTransactions;
-//    }
-//
-//    public void setSentTransactions(List<TransactionRecord> sentTransactions) {
-//        this.sentTransactions = sentTransactions;
-//    }
-//
-//    public List<TransactionRecord> getReceivedTransactions() {
-//        return receivedTransactions;
-//    }
-//
-//    public void setReceivedTransactions(List<TransactionRecord> receivedTransactions) {
-//        this.receivedTransactions = receivedTransactions;
-//    }
 }
